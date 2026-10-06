@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Executive Administration - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-lg-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+    <div>
+      <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Executive Control Center</span>
+      <h2 class="fw-bold text-dark mb-0"><i class="bi bi-cpu text-teal me-2"></i> System Administration</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="/admin/" target="_blank" class="btn btn-outline-secondary fw-semibold">
+        <i class="bi bi-gear me-1"></i> Django Admin Panel
+      </a>
+      <a href="/api/docs/" target="_blank" class="btn btn-outline-teal fw-semibold">
+        <i class="bi bi-code-slash me-1"></i> REST API Swagger
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Row (10 KPI Cards) -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white text-center">
+        <i class="bi bi-people text-primary fs-3 mb-1"></i>
+        <div class="text-muted small">Total Customers</div>
+        <h4 class="fw-bold text-dark mb-0">{{ total_customers }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white text-center">
+        <i class="bi bi-capsule text-teal fs-3 mb-1"></i>
+        <div class="text-muted small">Catalog Products</div>
+        <h4 class="fw-bold text-dark mb-0">{{ total_products }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white text-center">
+        <i class="bi bi-receipt text-info fs-3 mb-1"></i>
+        <div class="text-muted small">Total Orders</div>
+        <h4 class="fw-bold text-dark mb-0">{{ total_orders }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white text-center">
+        <i class="bi bi-cash-stack text-success fs-3 mb-1"></i>
+        <div class="text-muted small">Today's Sales</div>
+        <h4 class="fw-bold text-success mb-0">${{ today_sales }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white text-center">
+        <i class="bi bi-graph-up-arrow text-success fs-3 mb-1"></i>
+        <div class="text-muted small">Monthly Sales</div>
+        <h4 class="fw-bold text-dark mb-0">${{ monthly_sales }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white text-center">
+        <i class="bi bi-file-medical text-warning fs-3 mb-1"></i>
+        <div class="text-muted small">Pending Rx</div>
+        <h4 class="fw-bold text-warning mb-0">{{ pending_prescriptions }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Recent Orders (Col 8) -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white h-100">
+        <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-receipt text-teal me-2"></i> Recent Customer Orders</h5>
+          <a href="{% url 'orders:order_list' %}" class="small text-teal text-decoration-none fw-semibold">View All &rarr;</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light text-uppercase text-muted">
+              <tr>
+                <th class="ps-3">Order #</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Prescription</th>
+                <th class="text-end pe-3">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ord in recent_orders %}
+                <tr>
+                  <td class="ps-3 fw-bold">#{{ ord.order_number }}</td>
+                  <td>{{ ord.customer.username }}</td>
+                  <td class="fw-semibold text-teal">${{ ord.grand_total }}</td>
+                  <td><span class="badge bg-secondary">{{ ord.get_order_status_display }}</span></td>
+                  <td>
+                    {% if ord.requires_prescription %}
+                      {% if ord.prescription_satisfied %}
+                        <span class="badge bg-success">Approved</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark">Review Req.</span>
+                      {% endif %}
+                    {% else %}
+                      <span class="badge bg-light text-muted">OTC</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end pe-3">
+                    <a href="{% url 'orders:detail' ord.order_number %}" class="btn btn-sm btn-outline-teal py-0 px-2">Manage</a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="6" class="text-center py-3 text-muted">No orders yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Ops Links & Status Distribution (Col 4) -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-lightning-charge text-warning me-2"></i> Operational Portals</h5>
+        <div class="d-grid gap-2">
+          <a href="{% url 'dashboard:pharmacist' %}" class="btn btn-outline-info text-dark text-start py-2">
+            <i class="bi bi-shield-check text-info me-2 fs-5 align-middle"></i> <strong>Pharmacist Verification Hub</strong>
+          </a>
+          <a href="{% url 'inventory:list' %}" class="btn btn-outline-warning text-dark text-start py-2">
+            <i class="bi bi-boxes text-warning me-2 fs-5 align-middle"></i> <strong>Inventory &amp; Batch Control</strong>
+          </a>
+          <a href="{% url 'deliveries:list' %}" class="btn btn-outline-success text-dark text-start py-2">
+            <i class="bi bi-truck text-success me-2 fs-5 align-middle"></i> <strong>Courier &amp; Fleet Logistics</strong>
+          </a>
+          <a href="{% url 'payments:list' %}" class="btn btn-outline-primary text-dark text-start py-2">
+            <i class="bi bi-credit-card text-primary me-2 fs-5 align-middle"></i> <strong>Payments &amp; Transaction Ledger</strong>
+          </a>
+        </div>
+      </div>
+
+      <!-- Order Status Distribution Breakdown -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <h6 class="fw-bold text-dark mb-3">Order Status Pipeline</h6>
+        <div class="small">
+          {% for st in status_counts %}
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">{{ st.order_status }}:</span>
+              <span class="badge bg-light text-dark border">{{ st.total }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent System Audit Log -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-journal-check text-teal me-2"></i> Regulatory Audit Ledger</h5>
+      <span class="badge bg-soft-teal text-teal">Immutable Security Log</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped small align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Operator</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Object ID</th>
+            <th>Audit Description</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_audits %}
+            <tr>
+              <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+              <td class="fw-semibold">{{ log.user.username|default:"System" }}</td>
+              <td><span class="badge bg-secondary">{{ log.action }}</span></td>
+              <td><code>{{ log.model_name }}</code></td>
+              <td>{{ log.object_id|default:"-" }}</td>
+              <td>{{ log.description }}</td>
+              <td><span class="text-muted font-monospace">{{ log.ip_address|default:"127.0.0.1" }}</span></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="text-center py-3 text-muted">No audit records logged yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

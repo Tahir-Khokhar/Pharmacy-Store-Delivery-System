@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Prescription - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'prescriptions:list' %}" class="text-teal text-decoration-none">Prescriptions</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Upload Document</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        <div class="text-center mb-4">
+          <div class="d-inline-flex p-3 rounded-circle bg-soft-teal text-teal mb-2">
+            <i class="bi bi-file-earmark-medical fs-2"></i>
+          </div>
+          <h3 class="fw-bold text-dark">Upload Doctor's Prescription</h3>
+          <p class="text-muted small">Please upload a clear photograph or digital PDF of your valid prescription.</p>
+        </div>
+
+        <!-- Compliance & Regulatory Alert -->
+        <div class="alert alert-info border-0 rounded-3 small mb-4">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <strong>Valid Prescriptions Must Show:</strong>
+          <ul class="mb-0 mt-1 ps-3">
+            <li>Patient full name & doctor's clinic details</li>
+            <li>Doctor's signature & medical registration license</li>
+            <li>Medication name, strength, dosage, and issue date within valid period</li>
+          </ul>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 small mb-3">
+              {{ form.non_field_errors.0 }}
+            </div>
+          {% endif %}
+
+          <!-- File Upload Box -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Prescription File (PDF, PNG, JPG &le; 5MB) *</label>
+            <div class="border border-2 border-dashed rounded-4 p-4 text-center bg-light" id="dropArea">
+              <i class="bi bi-cloud-arrow-up text-teal fs-1 mb-2 d-block"></i>
+              <div class="fw-semibold text-dark mb-1">Choose a file or drag &amp; drop here</div>
+              <div class="small text-muted mb-3">Supported file formats: PDF, JPEG, JPG, PNG</div>
+              <input type="file" name="uploaded_file" id="id_uploaded_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+            </div>
+            {% if form.uploaded_file.errors %}
+              <div class="text-danger small mt-1">{{ form.uploaded_file.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Patient Full Name</label>
+              <input type="text" name="patient_name" class="form-control" placeholder="e.g. John Doe" value="{{ form.patient_name.value|default:'' }}">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Prescribing Doctor</label>
+              <input type="text" name="doctor_name" class="form-control" placeholder="Dr. Smith, MD" value="{{ form.doctor_name.value|default:'' }}">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Clinic / Hospital Name</label>
+            <input type="text" name="clinic_hospital" class="form-control" placeholder="St. Mary Memorial Hospital" value="{{ form.clinic_hospital.value|default:'' }}">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Special Instructions or Notes (Optional)</label>
+            {{ form.notes }}
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <a href="{% url 'prescriptions:list' %}" class="btn btn-light">Cancel</a>
+            <button type="submit" class="btn btn-teal px-4 py-2 fw-bold shadow-sm">
+              <i class="bi bi-shield-check me-1"></i> Submit for Pharmacist Review
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

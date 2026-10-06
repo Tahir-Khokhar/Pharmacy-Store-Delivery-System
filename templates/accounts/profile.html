@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- Sidebar navigation -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3">
+        <div class="text-center py-3 border-bottom">
+          <div class="mx-auto rounded-circle bg-teal text-white d-flex align-items-center justify-content-center shadow-sm mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
+            {% if profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle w-100 h-100 object-fit-cover">
+            {% else %}
+              {{ user.first_name|default:user.username|make_list|first|upper }}
+            {% endif %}
+          </div>
+          <h5 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h5>
+          <span class="badge bg-soft-teal text-teal">{{ user.get_role_display_name }}</span>
+        </div>
+
+        <div class="list-group list-group-flush pt-2 small">
+          <a href="{% url 'dashboard:router' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-speedometer2 me-2 text-teal"></i> Overview</a>
+          <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action border-0 py-2 active bg-teal text-white"><i class="bi bi-person me-2"></i> Profile Details</a>
+          <a href="{% url 'accounts:addresses' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-geo-alt me-2 text-teal"></i> Addresses</a>
+          <a href="{% url 'orders:order_list' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-receipt me-2 text-teal"></i> Order History</a>
+          <a href="{% url 'prescriptions:list' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-file-medical me-2 text-teal"></i> Prescriptions</a>
+          <a href="{% url 'products:wishlist' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-heart me-2 text-teal"></i> Wishlist</a>
+          <a href="{% url 'accounts:change_password' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-key me-2 text-teal"></i> Change Password</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold text-dark mb-4 border-bottom pb-3"><i class="bi bi-person-lines-fill text-teal me-2"></i> Account & Profile Information</h4>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">First Name</label>
+              <input type="text" name="first_name" class="form-control" value="{{ user_form.first_name.value|default:'' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Last Name</label>
+              <input type="text" name="last_name" class="form-control" value="{{ user_form.last_name.value|default:'' }}" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email Address (Read-Only)</label>
+              <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Phone Number</label>
+              <input type="text" name="phone" class="form-control" value="{{ user_form.phone.value|default:'' }}">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Date of Birth</label>
+              {{ profile_form.date_of_birth }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Blood Group</label>
+              <input type="text" name="blood_group" class="form-control" placeholder="e.g. O+, A+, B-" value="{{ profile_form.blood_group.value|default:'' }}">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Profile Photo</label>
+              {{ profile_form.avatar }}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Medical / Allergy Notes or Bio</label>
+              {{ profile_form.bio }}
+              <div class="form-text">Optional notes for clinical packaging, allergies, or delivery guidance.</div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+            <button type="submit" class="btn btn-teal px-4 fw-semibold">
+              <i class="bi bi-save me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

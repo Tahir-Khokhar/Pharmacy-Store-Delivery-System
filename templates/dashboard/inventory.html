@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory & Batch Control - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-lg-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+      <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Supply Chain Management</span>
+      <h2 class="fw-bold text-dark mb-0"><i class="bi bi-boxes text-teal me-2"></i> Inventory & Batch Control</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'inventory:batch_add' %}" class="btn btn-outline-teal fw-semibold">
+        <i class="bi bi-plus-circle me-1"></i> Register New Batch
+      </a>
+      <a href="{% url 'inventory:adjust' %}" class="btn btn-teal fw-semibold">
+        <i class="bi bi-sliders me-1"></i> Manual Stock Adjustment
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-primary border-4">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 me-3">
+            <i class="bi bi-capsule fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Total Catalog Items</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ total_products }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-warning border-4">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 me-3">
+            <i class="bi bi-exclamation-triangle fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Low Stock Items</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ low_stock_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-danger border-4">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-danger bg-opacity-10 text-danger p-3 me-3">
+            <i class="bi bi-x-octagon fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Out of Stock</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ out_of_stock_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-info border-4">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 me-3">
+            <i class="bi bi-calendar-x fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Expiring &le; 60 Days</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ expiring_soon_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+    <div class="card-header bg-white border-bottom p-3">
+      <ul class="nav nav-pills gap-2">
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'all' %}active bg-teal text-white{% else %}text-muted{% endif %}" href="{% url 'inventory:list' %}?tab=all">
+            All Products ({{ total_products }})
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'low_stock' %}active bg-warning text-dark fw-bold{% else %}text-muted{% endif %}" href="{% url 'inventory:list' %}?tab=low_stock">
+            <i class="bi bi-exclamation-triangle me-1"></i> Low Stock ({{ low_stock_count }})
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'out_of_stock' %}active bg-danger text-white{% else %}text-muted{% endif %}" href="{% url 'inventory:list' %}?tab=out_of_stock">
+            <i class="bi bi-x-circle me-1"></i> Out of Stock ({{ out_of_stock_count }})
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'expiring' %}active bg-info text-white{% else %}text-muted{% endif %}" href="{% url 'inventory:list' %}?tab=expiring">
+            <i class="bi bi-clock-history me-1"></i> Expiring Soon ({{ expiring_soon_count }})
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'expired' %}active bg-dark text-white{% else %}text-muted{% endif %}" href="{% url 'inventory:list' %}?tab=expired">
+            <i class="bi bi-slash-circle me-1"></i> Expired ({{ expired_count }})
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Table of Inventory -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-muted">
+          <tr>
+            <th class="ps-4">Product / Generic</th>
+            <th>Category</th>
+            <th>SKU</th>
+            <th>Current Stock</th>
+            <th>Min Level</th>
+            <th>Batch #</th>
+            <th>Expiry Date</th>
+            <th>Prescription</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+            <tr>
+              <td class="ps-4">
+                <div class="fw-bold text-dark">{{ p.name }}</div>
+                <div class="small text-muted">{{ p.generic_name|default:p.brand }} {% if p.strength %}&bull; {{ p.strength }}{% endif %}</div>
+              </td>
+              <td><span class="badge bg-light text-teal border">{{ p.category.name }}</span></td>
+              <td><code>{{ p.sku }}</code></td>
+              <td>
+                {% if p.stock_quantity == 0 %}
+                  <span class="badge bg-danger">0 Out of Stock</span>
+                {% elif p.stock_quantity <= p.min_stock_level %}
+                  <span class="badge bg-warning text-dark">{{ p.stock_quantity }} Low Stock</span>
+                {% else %}
+                  <span class="badge bg-success">{{ p.stock_quantity }} in stock</span>
+                {% endif %}
+              </td>
+              <td class="small text-muted">{{ p.min_stock_level }} units</td>
+              <td class="small">{{ p.batch_number|default:"-" }}</td>
+              <td>
+                {% if p.expiry_date %}
+                  <span class="small {% if p.is_expired %}text-danger fw-bold{% elif p.is_expiring_soon %}text-warning fw-bold{% else %}text-muted{% endif %}">
+                    {{ p.expiry_date|date:"M d, Y" }}
+                    {% if p.is_expired %}(Expired){% elif p.is_expiring_soon %}(Soon){% endif %}
+                  </span>
+                {% else %}
+                  <span class="text-muted small">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if p.prescription_required %}
+                  <span class="badge bg-warning text-dark"><i class="bi bi-file-medical-fill me-1"></i> Rx</span>
+                {% else %}
+                  <span class="badge bg-light text-muted">OTC</span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-4">
+                <a href="{% url 'inventory:adjust' %}?product_id={{ p.id }}" class="btn btn-sm btn-outline-teal">
+                  <i class="bi bi-sliders"></i> Adjust
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-4 text-muted">
+                No items match this filter criteria.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Inventory Audit Movements -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-teal me-2"></i> Recent Stock Audit Log</h5>
+      <span class="badge bg-soft-teal text-teal">Immutable Ledger</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped small align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Product</th>
+            <th>Type</th>
+            <th>Qty Change</th>
+            <th>Prev Stock</th>
+            <th>New Stock</th>
+            <th>Reference</th>
+            <th>Staff User</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tx in recent_transactions %}
+            <tr>
+              <td>{{ tx.created_at|date:"Y-m-d H:i" }}</td>
+              <td class="fw-semibold">{{ tx.product.name }}</td>
+              <td><span class="badge bg-secondary">{{ tx.get_transaction_type_display }}</span></td>
+              <td class="fw-bold {% if tx.quantity > 0 %}text-success{% else %}text-danger{% endif %}">
+                {% if tx.quantity > 0 %}+{% endif %}{{ tx.quantity }}
+              </td>
+              <td>{{ tx.previous_stock }}</td>
+              <td>{{ tx.new_stock }}</td>
+              <td>{{ tx.reference|default:"-" }}</td>
+              <td>{{ tx.performed_by.username|default:"System" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-3 text-muted">No stock movements recorded yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{
+  "name": "PharmaCare - Pharmacy Store & Delivery System",
+  "description": "Production-grade Pharmacy Store & Delivery Management System built with Django, Django REST Framework, Bootstrap 5, and JWT auth.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

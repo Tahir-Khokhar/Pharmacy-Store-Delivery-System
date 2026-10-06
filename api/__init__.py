@@ -1,0 +1,1 @@
+"""PharmaCare REST API package."""

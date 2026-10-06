@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Delivery Courier Hub - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-lg-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Fleet & Dispatch</span>
+      <h2 class="fw-bold text-dark mb-0"><i class="bi bi-truck text-teal me-2"></i> Courier Delivery Dashboard</h2>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-warning">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 me-3">
+            <i class="bi bi-clock-history fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Pending Unassigned</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ pending_dispatch_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-primary">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 me-3">
+            <i class="bi bi-card-checklist fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Assigned to Me</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ assigned_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-info">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 me-3">
+            <i class="bi bi-bicycle fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Out on Road</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ out_for_delivery_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-success">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 me-3">
+            <i class="bi bi-check-circle fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Completed Today</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ completed_today_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deliveries Table -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+    <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold text-dark mb-0">Delivery Shipments</h5>
+      <span class="badge bg-soft-teal text-teal">{{ deliveries.count }} Task(s)</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-muted">
+          <tr>
+            <th class="ps-4">Tracking #</th>
+            <th>Order #</th>
+            <th>Recipient & Address</th>
+            <th>Payment</th>
+            <th>Driver</th>
+            <th>Status</th>
+            <th class="text-end pe-4">Quick Dispatch Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for del in deliveries %}
+            <tr>
+              <td class="ps-4 py-3">
+                <a href="{% url 'deliveries:detail' del.tracking_number %}" class="fw-bold text-teal text-decoration-none">
+                  {{ del.tracking_number }}
+                </a>
+              </td>
+              <td>
+                <span class="fw-semibold text-dark">#{{ del.order.order_number }}</span>
+                <div class="small text-muted">${{ del.order.grand_total }}</div>
+              </td>
+              <td>
+                <div class="fw-semibold text-dark">{{ del.order.customer.get_full_name|default:del.order.customer.username }}</div>
+                <div class="small text-muted text-truncate" style="max-width: 280px;" title="{{ del.delivery_address }}">
+                  {{ del.delivery_address }}
+                </div>
+              </td>
+              <td>
+                <span class="badge {% if del.order.payment_status == 'PAID' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                  {{ del.order.payment_method }} &bull; {{ del.order.payment_status }}
+                </span>
+              </td>
+              <td>
+                {% if del.delivery_staff %}
+                  <span class="badge bg-light text-dark border">{{ del.delivery_staff.get_full_name|default:del.delivery_staff.username }}</span>
+                {% else %}
+                  <span class="badge bg-secondary">Unassigned</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if del.status == 'DELIVERED' %}
+                  <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> Delivered</span>
+                {% elif del.status == 'OUT_FOR_DELIVERY' %}
+                  <span class="badge bg-info text-dark"><i class="bi bi-truck me-1"></i> On the Way</span>
+                {% elif del.status == 'PICKED_UP' %}
+                  <span class="badge bg-primary">Picked Up</span>
+                {% elif del.status == 'ASSIGNED' %}
+                  <span class="badge bg-warning text-dark">Assigned</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ del.get_status_display }}</span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-4">
+                {% if del.status == 'PENDING' %}
+                  <form action="{% url 'deliveries:update_status' del.tracking_number %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="ASSIGNED">
+                    <button type="submit" class="btn btn-sm btn-teal">
+                      <i class="bi bi-person-check me-1"></i> Accept Job
+                    </button>
+                  </form>
+                {% elif del.status == 'ASSIGNED' %}
+                  <form action="{% url 'deliveries:update_status' del.tracking_number %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="PICKED_UP">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-box-seam me-1"></i> Picked Up
+                    </button>
+                  </form>
+                {% elif del.status == 'PICKED_UP' %}
+                  <form action="{% url 'deliveries:update_status' del.tracking_number %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="OUT_FOR_DELIVERY">
+                    <button type="submit" class="btn btn-sm btn-info text-dark fw-semibold">
+                      <i class="bi bi-truck me-1"></i> Start Run
+                    </button>
+                  </form>
+                {% elif del.status == 'OUT_FOR_DELIVERY' %}
+                  <a href="{% url 'deliveries:detail' del.tracking_number %}" class="btn btn-sm btn-success fw-semibold">
+                    <i class="bi bi-check-lg me-1"></i> Confirm Delivery
+                  </a>
+                {% else %}
+                  <a href="{% url 'deliveries:detail' del.tracking_number %}" class="btn btn-sm btn-outline-secondary">
+                    View
+                  </a>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">
+                No deliveries currently queued.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

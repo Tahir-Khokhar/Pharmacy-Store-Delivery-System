@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Prescription Center - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard:router' %}" class="text-teal text-decoration-none">Dashboard</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Prescriptions</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+      <h2 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-medical text-teal me-2"></i> Prescription Verification Desk</h2>
+      <p class="text-muted small mb-0">
+        {% if is_staff_view %}
+          Review incoming patient prescriptions, verify clinical validity, and authorize fulfillment.
+        {% else %}
+          Manage your uploaded medical prescriptions for regulated medications and order approvals.
+        {% endif %}
+      </p>
+    </div>
+    <a href="{% url 'prescriptions:upload' %}" class="btn btn-teal fw-semibold">
+      <i class="bi bi-cloud-arrow-up me-1"></i> Upload Prescription
+    </a>
+  </div>
+
+  {% if prescriptions %}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-uppercase text-muted">
+            <tr>
+              <th class="ps-4">Prescription ID</th>
+              {% if is_staff_view %}<th>Patient / User</th>{% endif %}
+              <th>Doctor / Clinic</th>
+              <th>Uploaded Date</th>
+              <th>Status</th>
+              <th>Verified By</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rx in prescriptions %}
+              <tr>
+                <td class="ps-4 py-3">
+                  <div class="fw-bold text-dark">
+                    <a href="{% url 'prescriptions:detail' rx.pk %}" class="text-dark text-decoration-none hover-teal">
+                      {{ rx.prescription_number }}
+                    </a>
+                  </div>
+                  <div class="small text-muted">
+                    File: <span class="badge bg-light text-muted">{{ rx.file_extension|upper }}</span>
+                  </div>
+                </td>
+
+                {% if is_staff_view %}
+                  <td>
+                    <div class="fw-semibold text-dark">{{ rx.customer.get_full_name|default:rx.customer.username }}</div>
+                    <div class="small text-muted">{{ rx.customer.email }}</div>
+                  </td>
+                {% endif %}
+
+                <td>
+                  <div class="small fw-semibold text-dark">{{ rx.doctor_name|default:"Physician unlisted" }}</div>
+                  <div class="small text-muted">{{ rx.clinic_hospital|default:"General Practice" }}</div>
+                </td>
+
+                <td>
+                  <span class="small text-secondary">{{ rx.created_at|date:"M d, Y H:i" }}</span>
+                </td>
+
+                <td>
+                  {% if rx.status == 'APPROVED' %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
+                  {% elif rx.status == 'REJECTED' %}
+                    <span class="badge bg-danger"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                  {% elif rx.status == 'UNDER_REVIEW' %}
+                    <span class="badge bg-info text-dark"><i class="bi bi-hourglass-split me-1"></i> Under Review</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i> Pending Verification</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if rx.verified_by %}
+                    <div class="small fw-semibold text-dark">Pharm. {{ rx.verified_by.get_full_name|default:rx.verified_by.username }}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">{{ rx.verified_at|date:"M d, Y" }}</div>
+                  {% else %}
+                    <span class="text-muted small">&mdash;</span>
+                  {% endif %}
+                </td>
+
+                <td class="text-end pe-4">
+                  <a href="{% url 'prescriptions:detail' rx.pk %}" class="btn btn-sm btn-outline-teal px-3">
+                    {% if is_staff_view and rx.status == 'PENDING' %}
+                      <i class="bi bi-shield-check me-1"></i> Review
+                    {% else %}
+                      <i class="bi bi-eye me-1"></i> View
+                    {% endif %}
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-3">
+      <div class="display-3 text-muted mb-3"><i class="bi bi-file-earmark-medical"></i></div>
+      <h4 class="fw-bold text-dark">No Prescriptions On Record</h4>
+      <p class="text-muted">You haven't submitted any prescriptions yet. Upload your doctor's slip to unlock prescription-only medications.</p>
+      <div>
+        <a href="{% url 'prescriptions:upload' %}" class="btn btn-teal px-4 py-2 fw-semibold">
+          <i class="bi bi-cloud-arrow-up me-1"></i> Upload New Prescription
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

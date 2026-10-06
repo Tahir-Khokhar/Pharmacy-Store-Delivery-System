@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - PharmaCare Categories{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'products:category_list' %}" class="text-teal text-decoration-none">Categories</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+    </ol>
+  </nav>
+
+  <!-- Category Header Banner -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-teal text-white">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-white text-teal mb-2"><i class="bi {{ category.icon }} me-1"></i> Category</span>
+        <h2 class="fw-bold mb-2">{{ category.name }}</h2>
+        <p class="mb-0 text-white-50">{{ category.description|default:"Browse certified medications, wellness supplements, and personal care supplies in this specialty." }}</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <span class="badge bg-dark bg-opacity-25 px-3 py-2 fs-6 rounded-pill">
+          {{ total_count }} products in this collection
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subcategories Pills if any -->
+  {% if subcategories %}
+    <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+      <span class="small text-muted fw-semibold me-2">Subcategories:</span>
+      {% for sub in subcategories %}
+        <a href="{% url 'products:category_detail' sub.slug %}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+          {{ sub.name }}
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Products Grid -->
+  <div class="row g-3">
+    {% for product in products %}
+      <div class="col-md-6 col-lg-3">
+        {% include 'includes/product_card.html' with product=product %}
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+          <div class="display-6 text-muted mb-3"><i class="bi bi-folder2-open"></i></div>
+          <h4 class="fw-bold text-dark">No Products In This Category</h4>
+          <p class="text-muted">We are replenishing this section soon.</p>
+          <div>
+            <a href="{% url 'products:product_list' %}" class="btn btn-teal px-4">Browse All Catalog</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% include 'includes/pagination.html' %}
+</div>
+{% endblock %}

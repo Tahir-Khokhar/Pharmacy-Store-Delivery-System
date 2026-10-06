@@ -1,0 +1,71 @@
+<footer class="bg-dark text-white pt-5 pb-4 mt-auto">
+  <div class="container">
+    <div class="row g-4">
+      <!-- Col 1: Brand & Info -->
+      <div class="col-lg-4 col-md-6">
+        <div class="d-flex align-items-center mb-3">
+          <div class="brand-icon me-2 rounded-circle bg-teal text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px;">
+            <i class="bi bi-capsule fs-5"></i>
+          </div>
+          <span class="fs-4 fw-bold">Pharma<span class="text-teal">Care</span></span>
+        </div>
+        <p class="text-white-50 small mb-3">
+          PharmaCare is a fully certified digital pharmacy and express medicine delivery platform. We provide genuine pharmaceutical supplies, rigorous prescription verification, and climate-controlled home delivery.
+        </p>
+        <div class="small text-white-50">
+          <div><i class="bi bi-geo-alt-fill text-teal me-2"></i> 100 Health Avenue, Medical City, Suite 400</div>
+          <div class="mt-1"><i class="bi bi-telephone-fill text-teal me-2"></i> Support: +1 (800) 555-PHARMA</div>
+          <div class="mt-1"><i class="bi bi-envelope-fill text-teal me-2"></i> Contact: care@pharmacare.local</div>
+        </div>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div class="col-lg-2 col-md-6 col-6">
+        <h6 class="text-uppercase text-white fw-bold mb-3 small">Storefront</h6>
+        <ul class="list-unstyled small text-white-50">
+          <li class="mb-2"><a href="{% url 'products:product_list' %}" class="text-white-50 text-decoration-none hover-teal">All Medicines</a></li>
+          <li class="mb-2"><a href="{% url 'products:category_list' %}" class="text-white-50 text-decoration-none hover-teal">Browse Categories</a></li>
+          <li class="mb-2"><a href="{% url 'prescriptions:upload' %}" class="text-white-50 text-decoration-none hover-teal">Upload Prescription</a></li>
+          <li class="mb-2"><a href="{% url 'cart:cart_detail' %}" class="text-white-50 text-decoration-none hover-teal">Shopping Cart</a></li>
+          <li class="mb-2"><a href="{% url 'dashboard:router' %}" class="text-white-50 text-decoration-none hover-teal">Customer Portal</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Role Management Portals -->
+      <div class="col-lg-3 col-md-6 col-6">
+        <h6 class="text-uppercase text-white fw-bold mb-3 small">Staff & Portals</h6>
+        <ul class="list-unstyled small text-white-50">
+          <li class="mb-2"><a href="{% url 'dashboard:pharmacist' %}" class="text-white-50 text-decoration-none hover-teal"><i class="bi bi-shield-check text-info me-1"></i> Pharmacist Desk</a></li>
+          <li class="mb-2"><a href="{% url 'dashboard:inventory' %}" class="text-white-50 text-decoration-none hover-teal"><i class="bi bi-box-seam text-warning me-1"></i> Inventory Manager</a></li>
+          <li class="mb-2"><a href="{% url 'dashboard:delivery' %}" class="text-white-50 text-decoration-none hover-teal"><i class="bi bi-truck text-success me-1"></i> Delivery Driver Hub</a></li>
+          <li class="mb-2"><a href="{% url 'dashboard:admin_dashboard' %}" class="text-white-50 text-decoration-none hover-teal"><i class="bi bi-cpu text-teal me-1"></i> Executive Admin</a></li>
+          <li class="mb-2"><a href="/api/docs/" class="text-white-50 text-decoration-none hover-teal"><i class="bi bi-journal-code text-primary me-1"></i> REST API Docs (Swagger)</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Safety & Compliance -->
+      <div class="col-lg-3 col-md-6">
+        <h6 class="text-uppercase text-white fw-bold mb-3 small">Clinical Safety Notice</h6>
+        <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 small text-white-50">
+          <p class="mb-2">
+            <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+            <strong>Prescription Policy:</strong> Schedule IV/V & Rx-designated medications require verification by licensed staff before shipment.
+          </p>
+          <div class="text-muted" style="font-size: 0.75rem;">
+            This system does not provide medical diagnosis or symptom-based automated prescribing. Consult your physician for medical guidance.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-secondary my-4">
+
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center small text-white-50">
+      <div>&copy; 2026 PharmaCare System. All rights reserved. Registered Pharmacy License #PH-2026-9941.</div>
+      <div class="mt-2 mt-sm-0">
+        <span class="badge bg-dark border border-secondary text-light me-2"><i class="bi bi-lock-fill text-success"></i> 256-bit SSL</span>
+        <span class="badge bg-dark border border-secondary text-light"><i class="bi bi-check-circle-fill text-info"></i> Good Pharmacy Practice (GPP)</span>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Delivery Addresses - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- Sidebar -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3">
+        <div class="text-center py-3 border-bottom">
+          <h5 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h5>
+          <span class="badge bg-soft-teal text-teal">{{ user.get_role_display_name }}</span>
+        </div>
+        <div class="list-group list-group-flush pt-2 small">
+          <a href="{% url 'dashboard:router' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-speedometer2 me-2 text-teal"></i> Overview</a>
+          <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-person me-2 text-teal"></i> Profile Details</a>
+          <a href="{% url 'accounts:addresses' %}" class="list-group-item list-group-item-action border-0 py-2 active bg-teal text-white"><i class="bi bi-geo-alt me-2"></i> Addresses</a>
+          <a href="{% url 'orders:order_list' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-receipt me-2 text-teal"></i> Order History</a>
+          <a href="{% url 'prescriptions:list' %}" class="list-group-item list-group-item-action border-0 py-2 text-dark"><i class="bi bi-file-medical me-2 text-teal"></i> Prescriptions</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold text-dark mb-0"><i class="bi bi-geo-alt text-teal me-2"></i> Saved Delivery Addresses</h4>
+        <button class="btn btn-teal btn-sm px-3" data-bs-toggle="collapse" data-bs-target="#newAddressCollapse">
+          <i class="bi bi-plus-lg me-1"></i> Add New Address
+        </button>
+      </div>
+
+      <!-- Add New Address Collapse Form -->
+      <div class="collapse mb-4" id="newAddressCollapse">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-teal border-4">
+          <h5 class="fw-bold text-dark mb-3">Add Delivery Destination</h5>
+          <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Address Label</label>
+                {{ form.title }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Recipient Full Name</label>
+                {{ form.full_name }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Contact Phone</label>
+                {{ form.phone }}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold">Street Address / House No.</label>
+                {{ form.address_line }}
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Area / Sector</label>
+                {{ form.area }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">City</label>
+                {{ form.city }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Postal / ZIP Code</label>
+                {{ form.postal_code }}
+              </div>
+
+              <div class="col-md-8">
+                <label class="form-label fw-semibold">Landmark / Directions</label>
+                {{ form.landmark }}
+              </div>
+              <div class="col-md-4 d-flex align-items-center pt-4">
+                <div class="form-check">
+                  {{ form.is_default }}
+                  <label class="form-check-label fw-semibold" for="{{ form.is_default.id_for_label }}">Set as default</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-2 d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#newAddressCollapse">Cancel</button>
+              <button type="submit" class="btn btn-teal px-4 fw-semibold"><i class="bi bi-check-lg me-1"></i> Save Address</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Existing Addresses List -->
+      <div class="row g-3">
+        {% for addr in addresses %}
+          <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 position-relative {% if addr.is_default %}border border-teal border-2{% endif %}">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span class="badge {% if addr.is_default %}bg-teal{% else %}bg-secondary{% endif %} me-1">{{ addr.title }}</span>
+                  {% if addr.is_default %}
+                    <span class="badge bg-soft-teal text-teal">Default Address</span>
+                  {% endif %}
+                </div>
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                    {% if not addr.is_default %}
+                      <li><a class="dropdown-item small" href="{% url 'accounts:address_set_default' addr.id %}"><i class="bi bi-star me-2 text-warning"></i> Set Default</a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item small" href="{% url 'accounts:address_edit' addr.id %}"><i class="bi bi-pencil me-2 text-teal"></i> Edit</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <form action="{% url 'accounts:address_delete' addr.id %}" method="post" onsubmit="return confirm('Remove this address?');">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item small text-danger"><i class="bi bi-trash me-2"></i> Delete</button>
+                      </form>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="fw-bold text-dark fs-6">{{ addr.full_name }}</div>
+              <div class="small text-muted mb-2"><i class="bi bi-telephone me-1"></i> {{ addr.phone }}</div>
+              <div class="small text-secondary flex-grow-1">
+                {{ addr.address_line }}{% if addr.area %}, {{ addr.area }}{% endif %}<br>
+                {{ addr.city }}{% if addr.province %}, {{ addr.province }}{% endif %} - {{ addr.postal_code }}
+                {% if addr.landmark %}
+                  <div class="text-muted mt-1 fst-italic">Landmark: {{ addr.landmark }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+              <div class="display-6 text-muted mb-3"><i class="bi bi-geo-alt"></i></div>
+              <h5 class="fw-bold text-dark">No Addresses Saved Yet</h5>
+              <p class="text-muted small">Save your home, office, or caregiver address for quick checkout.</p>
+              <div>
+                <button class="btn btn-teal btn-sm px-4" data-bs-toggle="collapse" data-bs-target="#newAddressCollapse">Add First Address</button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

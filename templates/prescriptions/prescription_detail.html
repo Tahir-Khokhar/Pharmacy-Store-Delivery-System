@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Prescription {{ prescription.prescription_number }} - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'prescriptions:list' %}" class="text-teal text-decoration-none">Prescriptions</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ prescription.prescription_number }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <!-- Left Column: Document Viewer (Col 7) -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-medical text-teal me-2"></i> Document Preview</h5>
+          <a href="{{ prescription.uploaded_file.url }}" target="_blank" download class="btn btn-outline-teal btn-sm">
+            <i class="bi bi-download me-1"></i> Download File
+          </a>
+        </div>
+
+        <div class="p-3 bg-light rounded-4 text-center d-flex align-items-center justify-content-center min-vh-50">
+          {% if prescription.is_image %}
+            <img src="{{ prescription.uploaded_file.url }}" alt="Prescription Document" class="img-fluid rounded-3 shadow-sm" style="max-height: 500px; object-fit: contain;">
+          {% else %}
+            <!-- PDF Document Fallback -->
+            <div class="py-5">
+              <i class="bi bi-file-earmark-pdf text-danger display-1 mb-3 d-block"></i>
+              <h5 class="fw-bold">PDF Prescription Document</h5>
+              <p class="text-muted small">This is a PDF file. Click below to view in full resolution.</p>
+              <a href="{{ prescription.uploaded_file.url }}" target="_blank" class="btn btn-teal px-4">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Open PDF Document
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Meta & Pharmacist Review Action (Col 5) -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <span class="badge bg-soft-teal text-teal mb-1">Prescription Record</span>
+            <h4 class="fw-bold text-dark mb-0">{{ prescription.prescription_number }}</h4>
+          </div>
+          <div>
+            {% if prescription.status == 'APPROVED' %}
+              <span class="badge bg-success px-3 py-2 fs-6 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
+            {% elif prescription.status == 'REJECTED' %}
+              <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+            {% elif prescription.status == 'UNDER_REVIEW' %}
+              <span class="badge bg-info text-dark px-3 py-2 fs-6 rounded-pill">Under Review</span>
+            {% else %}
+              <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill">Pending Review</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Meta Details Table -->
+        <table class="table table-sm table-borderless small mb-3">
+          <tbody>
+            <tr>
+              <th class="text-muted" style="width: 140px;">Patient Name:</th>
+              <td class="fw-bold text-dark">{{ prescription.patient_name|default:prescription.customer.get_full_name|default:prescription.customer.username }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Prescribing Doctor:</th>
+              <td>{{ prescription.doctor_name|default:"Not specified" }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Clinic / Hospital:</th>
+              <td>{{ prescription.clinic_hospital|default:"Not specified" }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Uploaded Date:</th>
+              <td>{{ prescription.created_at|date:"M d, Y H:i" }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Account Holder:</th>
+              <td>{{ prescription.customer.username }} ({{ prescription.customer.email }})</td>
+            </tr>
+            {% if prescription.verified_by %}
+              <tr>
+                <th class="text-muted">Verified By:</th>
+                <td class="text-teal fw-semibold">Pharm. {{ prescription.verified_by.get_full_name|default:prescription.verified_by.username }}</td>
+              </tr>
+              <tr>
+                <th class="text-muted">Verified Date:</th>
+                <td>{{ prescription.verified_at|date:"M d, Y H:i" }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+
+        {% if prescription.notes %}
+          <div class="p-3 bg-light rounded-3 small mb-3">
+            <strong class="d-block text-dark mb-1">Patient Remarks:</strong>
+            <p class="text-muted mb-0">{{ prescription.notes }}</p>
+          </div>
+        {% endif %}
+
+        {% if prescription.status == 'REJECTED' and prescription.rejection_reason %}
+          <div class="alert alert-danger rounded-3 small mb-3">
+            <strong class="d-block mb-1"><i class="bi bi-exclamation-octagon-fill me-1"></i> Pharmacist Rejection Reason:</strong>
+            <p class="mb-0">{{ prescription.rejection_reason }}</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Staff / Pharmacist Review Panel -->
+      {% if can_review %}
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-4 border-info">
+          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-shield-check text-info me-2"></i> Clinical Verification Panel</h5>
+          <p class="text-muted small mb-3">As licensed pharmacy staff, inspect document authenticity, dosage, and date validity before authorizing order fulfillment.</p>
+
+          <form action="{% url 'prescriptions:review_action' prescription.pk %}" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Clinical Decision</label>
+              {{ review_form.status }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Rejection Reason (Required if Rejecting)</label>
+              {{ review_form.rejection_reason }}
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold small">Pharmacist Audit Notes</label>
+              {{ review_form.notes }}
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-teal fw-bold py-2">
+                <i class="bi bi-check2-circle me-1"></i> Record Pharmacist Decision
+              </button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('form select, form textarea').forEach(el => {
+    el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

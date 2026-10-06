@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} ({{ product.strength }}) - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'products:product_list' %}" class="text-teal text-decoration-none">Catalog</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'products:category_detail' product.category.slug %}" class="text-teal text-decoration-none">{{ product.category.name }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-5">
+    <div class="row g-5">
+      <!-- Left: Product Image & Gallery -->
+      <div class="col-md-5">
+        <div class="p-4 bg-light rounded-4 text-center mb-3 position-relative">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainProductImg" class="img-fluid object-fit-contain" style="max-height: 340px;">
+          {% else %}
+            <div class="py-5 text-teal">
+              <i class="bi bi-capsule" style="font-size: 5rem;"></i>
+              <div class="mt-2 text-muted fw-semibold">{{ product.dosage_form }}</div>
+            </div>
+          {% endif %}
+          
+          {% if product.prescription_required %}
+            <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">
+              <i class="bi bi-file-medical-fill me-1"></i> Rx Prescription Required
+            </span>
+          {% endif %}
+        </div>
+
+        {% if product.additional_images.all %}
+          <div class="d-flex gap-2 overflow-auto pb-2">
+            {% if product.image %}
+              <img src="{{ product.image.url }}" class="rounded border p-1 gallery-thumb active-thumb" style="width: 64px; height: 64px; object-fit: contain; cursor: pointer;">
+            {% endif %}
+            {% for extra in product.additional_images.all %}
+              <img src="{{ extra.image.url }}" class="rounded border p-1 gallery-thumb" style="width: 64px; height: 64px; object-fit: contain; cursor: pointer;">
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: Details, Pricing & Actions -->
+      <div class="col-md-7">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <span class="badge bg-soft-teal text-teal mb-2">{{ product.category.name }}</span>
+            <span class="badge bg-secondary text-light mb-2">{{ product.dosage_form }}</span>
+          </div>
+          <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-2 wishlist-btn" data-product-id="{{ product.id }}" title="Wishlist">
+            <i class="bi {% if is_wishlisted %}bi-heart-fill text-danger{% else %}bi-heart{% endif %}"></i>
+          </button>
+        </div>
+
+        <h2 class="fw-bold text-dark mb-1">{{ product.name }}</h2>
+        {% if product.strength %}
+          <div class="fs-5 text-secondary fw-semibold mb-2">{{ product.strength }}</div>
+        {% endif %}
+
+        {% if product.generic_name %}
+          <div class="text-muted small mb-3">
+            <i class="bi bi-info-circle text-teal me-1"></i> Generic Name: <strong class="text-dark">{{ product.generic_name }}</strong>
+          </div>
+        {% endif %}
+
+        <div class="d-flex align-items-center mb-3">
+          <div class="text-warning me-2">
+            {% for i in "12345" %}
+              <i class="bi {% if forloop.counter <= product.average_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+            {% endfor %}
+          </div>
+          <span class="fw-bold me-2">{{ product.average_rating }}</span>
+          <span class="text-muted small">({{ product.reviews_count }} verified reviews)</span>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline">
+          <span class="display-6 fw-bold text-teal me-3">${{ product.effective_price }}</span>
+          {% if product.discount_price and product.discount_price < product.price %}
+            <span class="text-muted text-decoration-line-through fs-5 me-3">${{ product.price }}</span>
+            <span class="badge bg-danger rounded-pill px-2 py-1">-{{ product.discount_percent }}% OFF</span>
+          {% endif %}
+          <span class="text-muted ms-auto small">Unit: <strong>{{ product.unit }}</strong></span>
+        </div>
+
+        <!-- Prescription Warning / Guarantee -->
+        {% if product.prescription_required %}
+          <div class="alert alert-warning border-0 shadow-sm rounded-3 d-flex align-items-start mb-4">
+            <i class="bi bi-shield-exclamation text-warning fs-3 me-3 mt-1"></i>
+            <div>
+              <div class="fw-bold">Prescription Required Before Fulfillment</div>
+              <p class="small mb-1 text-secondary">
+                Under healthcare regulations, this medication requires a valid prescription from a licensed healthcare practitioner.
+                You can upload your prescription file (PDF/Image) during checkout or in your prescription center. A licensed pharmacist will review it before your order is dispatched.
+              </p>
+              <a href="{% url 'prescriptions:upload' %}" class="small text-teal fw-semibold">Upload Prescription Now &rarr;</a>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-success border-0 shadow-sm rounded-3 d-flex align-items-center mb-4 py-2">
+            <i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>
+            <span class="small fw-medium">Over-the-Counter (OTC) product &ndash; No prescription required.</span>
+          </div>
+        {% endif %}
+
+        <!-- Stock and Cart Actions -->
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <span class="fw-semibold me-2">Availability:</span>
+            {% if product.stock_quantity > 10 %}
+              <span class="badge bg-success"><i class="bi bi-check-lg me-1"></i> In Stock ({{ product.stock_quantity }} units)</span>
+            {% elif product.stock_quantity > 0 %}
+              <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i> Low Stock (Only {{ product.stock_quantity }} left)</span>
+            {% else %}
+              <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Out of Stock</span>
+            {% endif %}
+          </div>
+
+          {% if product.stock_quantity > 0 %}
+            <form id="addToCartForm" class="d-flex gap-3 align-items-center mt-3">
+              <div class="input-group" style="width: 140px;">
+                <button type="button" class="btn btn-outline-secondary" id="decreaseQtyBtn">-</button>
+                <input type="number" name="quantity" id="productQuantity" class="form-control text-center" value="1" min="1" max="{{ product.stock_quantity }}">
+                <button type="button" class="btn btn-outline-secondary" id="increaseQtyBtn">+</button>
+              </div>
+              <button type="button" class="btn btn-teal px-4 py-2 fw-semibold flex-grow-1 add-to-cart-btn" data-product-id="{{ product.id }}">
+                <i class="bi bi-bag-plus-fill me-2"></i> Add to Cart
+              </button>
+            </form>
+          {% else %}
+            <button class="btn btn-secondary w-100 py-2 disabled mt-3">Currently Unavailable</button>
+          {% endif %}
+        </div>
+
+        <!-- Clinical Meta Grid -->
+        <div class="border-top pt-3 small text-muted">
+          <div class="row g-2">
+            <div class="col-6"><strong>Brand:</strong> {{ product.brand }}</div>
+            <div class="col-6"><strong>Manufacturer:</strong> {{ product.manufacturer }}</div>
+            <div class="col-6"><strong>SKU:</strong> {{ product.sku }}</div>
+            <div class="col-6"><strong>Batch #:</strong> {{ product.batch_number|default:"Certified Batch" }}</div>
+            {% if product.expiry_date %}
+              <div class="col-12">
+                <strong>Expiry Date:</strong> {{ product.expiry_date|date:"F Y" }}
+                {% if product.is_expiring_soon %}
+                  <span class="badge bg-warning text-dark ms-1">Expiring Soon</span>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Description & Reviews Tabs -->
+    <div class="mt-5 pt-4 border-top">
+      <ul class="nav nav-tabs border-bottom" id="productDetailTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active fw-semibold text-teal" id="desc-tab" data-bs-toggle="tab" data-bs-target="#descContent" type="button" role="tab">
+            Description & Usage
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-semibold text-teal" id="safety-tab" data-bs-toggle="tab" data-bs-target="#safetyContent" type="button" role="tab">
+            Safety & Storage
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-semibold text-teal" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviewsContent" type="button" role="tab">
+            Customer Reviews ({{ reviews.count }})
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content p-4 bg-light rounded-bottom-4" id="productDetailTabsContent">
+        <!-- Tab 1: Description -->
+        <div class="tab-pane fade show active" id="descContent" role="tabpanel">
+          <h5 class="fw-bold mb-3 text-dark">About {{ product.name }}</h5>
+          <div class="text-secondary leading-relaxed mb-3">
+            {{ product.description|linebreaks }}
+          </div>
+          {% if product.short_description %}
+            <div class="p-3 bg-white rounded-3 border">
+              <strong>Summary:</strong> {{ product.short_description }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Tab 2: Safety & Storage -->
+        <div class="tab-pane fade" id="safetyContent" role="tabpanel">
+          <h5 class="fw-bold mb-3 text-dark">Storage & Handling Instructions</h5>
+          <ul class="text-secondary">
+            <li class="mb-2">Store in a cool, dry place below 25&deg;C (77&deg;F) away from direct sunlight.</li>
+            <li class="mb-2">Keep out of reach and sight of children and pets.</li>
+            <li class="mb-2">Do not consume after the printed expiration date.</li>
+            <li class="mb-2">Always read the patient information leaflet enclosed in the pack for full precautions.</li>
+          </ul>
+        </div>
+
+        <!-- Tab 3: Reviews -->
+        <div class="tab-pane fade" id="reviewsContent" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h5 class="fw-bold text-dark mb-1">Customer Feedback</h5>
+              <div class="small text-muted">Average rating: {{ product.average_rating }} / 5.0</div>
+            </div>
+            {% if user.is_authenticated %}
+              <a href="{% url 'reviews:add_review' product.id %}" class="btn btn-teal btn-sm">
+                <i class="bi bi-pencil-square me-1"></i> Write a Review
+              </a>
+            {% else %}
+              <a href="{% url 'accounts:login' %}" class="btn btn-outline-teal btn-sm">Log in to Review</a>
+            {% endif %}
+          </div>
+
+          {% for review in reviews %}
+            <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <strong class="text-dark">{{ review.customer.get_full_name|default:review.customer.username }}</strong>
+                  <span class="badge bg-soft-teal text-teal ms-1"><i class="bi bi-patch-check-fill me-1"></i> Verified Purchase</span>
+                </div>
+                <div class="text-warning small">
+                  {% for i in "12345" %}
+                    <i class="bi {% if forloop.counter <= review.rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                  {% endfor %}
+                </div>
+              </div>
+              <p class="text-secondary small mb-1">{{ review.review }}</p>
+              <div class="text-muted" style="font-size: 0.75rem;">Reviewed on {{ review.created_at|date:"M d, Y" }}</div>
+            </div>
+          {% empty %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-chat-heart fs-2 mb-2 d-block"></i>
+              No customer reviews yet. Be the first to share your experience!
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  {% if related_products %}
+    <div class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold text-dark mb-0">Related in {{ product.category.name }}</h4>
+        <a href="{% url 'products:category_detail' product.category.slug %}" class="text-teal text-decoration-none fw-semibold small">View Category &rarr;</a>
+      </div>
+      <div class="row g-3">
+        {% for rel in related_products %}
+          <div class="col-md-6 col-lg-3">
+            {% include 'includes/product_card.html' with product=rel %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Quantity increment/decrement
+  const qtyInput = document.getElementById('productQuantity');
+  const incBtn = document.getElementById('increaseQtyBtn');
+  const decBtn = document.getElementById('decreaseQtyBtn');
+  if (qtyInput && incBtn && decBtn) {
+    incBtn.addEventListener('click', () => {
+      let max = parseInt(qtyInput.getAttribute('max')) || 99;
+      let val = parseInt(qtyInput.value) || 1;
+      if (val < max) qtyInput.value = val + 1;
+    });
+    decBtn.addEventListener('click', () => {
+      let val = parseInt(qtyInput.value) || 1;
+      if (val > 1) qtyInput.value = val - 1;
+    });
+  }
+
+  // Gallery image swap
+  document.querySelectorAll('.gallery-thumb').forEach(thumb => {
+    thumb.addEventListener('click', function() {
+      const mainImg = document.getElementById('mainProductImg');
+      if (mainImg) mainImg.src = this.src;
+      document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active-thumb'));
+      this.classList.add('active-thumb');
+    });
+  });
+</script>
+{% endblock %}

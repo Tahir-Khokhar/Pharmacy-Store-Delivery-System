@@ -1,0 +1,112 @@
+/* PharmaCare Healthcare Design System */
+:root {
+  --primary-color: #0d9488;
+  --primary-hover: #0f766e;
+  --secondary-color: #14b8a6;
+  --soft-teal: #ccfbf1;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --dark-color: #0f172a;
+  --light-color: #f8fafc;
+  --border-color: #e2e8f0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1e293b;
+  background-color: var(--light-color);
+}
+
+/* Color Classes */
+.text-teal { color: var(--primary-color) !important; }
+.bg-teal { background-color: var(--primary-color) !important; color: #fff !important; }
+.bg-soft-teal { background-color: var(--soft-teal) !important; }
+.border-teal { border-color: var(--primary-color) !important; }
+
+.hover-teal:hover {
+  color: var(--primary-color) !important;
+}
+
+/* Buttons */
+.btn-teal {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+.btn-teal:hover, .btn-teal:focus {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: #fff;
+}
+
+.btn-outline-teal {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background-color: transparent;
+}
+.btn-outline-teal:hover, .btn-outline-teal:focus {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+
+/* Gradients */
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+}
+.bg-gradient-dark {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* Product Card */
+.product-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(13, 148, 136, 0.15) !important;
+}
+
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+.hover-shadow:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Brand Icon */
+.brand-icon {
+  width: 40px;
+  height: 40px;
+}
+
+/* Utilities */
+.cursor-pointer {
+  cursor: pointer;
+}
+.min-vh-50 {
+  min-height: 50vh;
+}
+.leading-tight {
+  line-height: 1.15;
+}
+.leading-relaxed {
+  line-height: 1.7;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

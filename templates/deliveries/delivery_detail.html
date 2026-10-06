@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Tracking #{{ delivery.tracking_number }} - Courier Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'deliveries:list' %}" class="text-teal text-decoration-none">Courier Hub</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ delivery.tracking_number }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <!-- Left Column: Delivery Details (Col 7) -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <span class="badge bg-soft-teal text-teal mb-1">Shipment Information</span>
+            <h3 class="fw-bold text-dark mb-0">{{ delivery.tracking_number }}</h3>
+            <div class="small text-muted">Linked to Order #{{ delivery.order.order_number }}</div>
+          </div>
+          <span class="badge {% if delivery.status == 'DELIVERED' %}bg-success{% else %}bg-primary{% endif %} fs-6 px-3 py-2 rounded-pill">
+            {{ delivery.get_status_display }}
+          </span>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 mb-4">
+          <h6 class="fw-bold text-dark mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Delivery Destination Address</h6>
+          <div class="text-secondary small" style="white-space: pre-line;">
+            {{ delivery.delivery_address }}
+          </div>
+        </div>
+
+        <!-- Package & Order Summary -->
+        <h6 class="fw-bold text-dark mb-2">Package Contents ({{ delivery.order.items.count }} items)</h6>
+        <ul class="list-group list-group-flush small mb-3">
+          {% for item in delivery.order.items.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <div>
+                <strong>{{ item.quantity }}x</strong> {{ item.product_name_snapshot }}
+                {% if item.prescription_required %}<span class="badge bg-warning text-dark ms-1">Rx</span>{% endif %}
+              </div>
+              <span class="text-muted">${{ item.subtotal }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <!-- Customer Order Notes -->
+        {% if delivery.order.customer_notes %}
+          <div class="alert alert-info small mb-0">
+            <strong>Customer Delivery Notes:</strong> {{ delivery.order.customer_notes }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Status Transitions Form (Col 5) -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-4 border-teal mb-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders text-teal me-2"></i> Update Delivery Status</h5>
+
+        <form action="{% url 'deliveries:update_status' delivery.tracking_number %}" method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Transition Status</label>
+            <select name="status" class="form-select">
+              <option value="ASSIGNED" {% if delivery.status == 'ASSIGNED' %}selected{% endif %}>ASSIGNED - Assigned to Courier</option>
+              <option value="PICKED_UP" {% if delivery.status == 'PICKED_UP' %}selected{% endif %}>PICKED UP - Package Collected from Pharmacy</option>
+              <option value="OUT_FOR_DELIVERY" {% if delivery.status == 'OUT_FOR_DELIVERY' %}selected{% endif %}>OUT FOR DELIVERY - In Transit to Customer</option>
+              <option value="DELIVERED" {% if delivery.status == 'DELIVERED' %}selected{% endif %}>DELIVERED - Handed to Recipient</option>
+              <option value="FAILED" {% if delivery.status == 'FAILED' %}selected{% endif %}>FAILED - Customer Unavailable / Wrong Address</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Recipient Name (Required on Delivery)</label>
+            <input type="text" name="recipient_name" class="form-control" placeholder="Name of person receiving the medicine" value="{{ delivery.recipient_name|default:'' }}">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold small">Delivery Audit Notes</label>
+            <textarea name="delivery_notes" rows="3" class="form-control" placeholder="Door buzzer, handed to recipient directly, security verification notes...">{{ delivery.delivery_notes }}</textarea>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-teal fw-bold py-2">
+              <i class="bi bi-check2-circle me-1"></i> Update Status & Record Audit
+            </button>
+            <a href="{% url 'deliveries:list' %}" class="btn btn-light">Back to Deliveries List</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Financial Checklist -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-wallet2 text-success me-1"></i> Payment Verification</h6>
+        <div class="small">
+          <div>Payment Type: <strong>{{ delivery.order.payment_method }}</strong></div>
+          <div class="mt-1">
+            Amount: <span class="fs-5 fw-bold text-teal">${{ delivery.order.grand_total }}</span>
+          </div>
+          <div class="mt-2">
+            Status:
+            <span class="badge {% if delivery.order.payment_status == 'PAID' %}bg-success{% else %}bg-danger{% endif %}">
+              {{ delivery.order.payment_status }}
+            </span>
+          </div>
+          {% if delivery.order.payment_method == 'COD' and delivery.order.payment_status != 'PAID' %}
+            <div class="alert alert-warning small mt-2 mb-0">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i> Collect <strong>${{ delivery.order.grand_total }}</strong> in cash before handing over medication package!
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

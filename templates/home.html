@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PharmaCare - Certified Digital Pharmacy & Express Medicine Delivery{% endblock %}
+
+{% block content %}
+<!-- 1. Hero Section -->
+<section class="hero-section py-5 bg-gradient-teal position-relative overflow-hidden">
+  <div class="container py-lg-4">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7 text-white">
+        <div class="d-inline-flex align-items-center bg-white bg-opacity-20 text-white rounded-pill px-3 py-1 mb-3 small fw-semibold">
+          <i class="bi bi-shield-check text-warning me-2"></i> 100% Certified Medications &amp; Temperature-Monitored Delivery
+        </div>
+        <h1 class="display-4 fw-bold mb-3 leading-tight">
+          Your Trusted Pharmacy, Delivered Directly to Your Doorstep.
+        </h1>
+        <p class="lead text-white-50 mb-4" style="max-width: 580px;">
+          Order authentic prescription medications, OTC remedies, wellness vitamins, and diagnostic essentials with clinical verification by licensed pharmacists.
+        </p>
+
+        <!-- Search Bar in Hero -->
+        <form class="hero-search-box mb-4" action="{% url 'products:search' %}" method="get" style="max-width: 540px;">
+          <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden bg-white p-1">
+            <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="bi bi-search text-teal"></i></span>
+            <input type="text" name="q" class="form-control border-0 ps-1" placeholder="Search medicines, generic ingredients, brands..." aria-label="Search medicines">
+            <button class="btn btn-teal rounded-pill px-4 fw-semibold" type="submit">Search</button>
+          </div>
+        </form>
+
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <a href="{% url 'products:product_list' %}" class="btn btn-light btn-lg px-4 fw-bold text-teal rounded-pill shadow-sm">
+            <i class="bi bi-capsule me-1"></i> Browse Catalog
+          </a>
+          <a href="{% url 'prescriptions:upload' %}" class="btn btn-outline-light btn-lg px-4 fw-semibold rounded-pill">
+            <i class="bi bi-file-earmark-medical me-1"></i> Upload Prescription
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Visual Card -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-teal text-white p-3 me-3">
+              <i class="bi bi-heart-pulse-fill fs-3"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-dark">Quick Prescription Refill</h5>
+              <div class="small text-muted">Reviewed within 15 minutes by on-duty staff</div>
+            </div>
+          </div>
+
+          <div class="bg-light p-3 rounded-3 mb-3 small">
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-check-circle-fill text-success me-2"></i>
+              <span>Upload doctor's slip (PDF, JPEG, PNG)</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-check-circle-fill text-success me-2"></i>
+              <span>Licensed pharmacist clinical verification</span>
+            </div>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-check-circle-fill text-success me-2"></i>
+              <span>Dispatched with tamper-evident seal</span>
+            </div>
+          </div>
+
+          <a href="{% url 'prescriptions:upload' %}" class="btn btn-teal w-100 py-3 fw-bold rounded-pill shadow-sm">
+            Upload Your Prescription Now <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Badges Strip -->
+<div class="bg-white border-bottom py-3">
+  <div class="container">
+    <div class="row g-3 text-center text-md-start small text-muted">
+      <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start">
+        <i class="bi bi-shield-check text-teal fs-3 me-2"></i>
+        <div>
+          <strong class="text-dark d-block">100% Genuine</strong>
+          Direct from licensed manufacturers
+        </div>
+      </div>
+      <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start">
+        <i class="bi bi-truck text-teal fs-3 me-2"></i>
+        <div>
+          <strong class="text-dark d-block">Express Home Delivery</strong>
+          Fast doorstep dispatch
+        </div>
+      </div>
+      <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start">
+        <i class="bi bi-person-check text-teal fs-3 me-2"></i>
+        <div>
+          <strong class="text-dark d-block">Pharmacist Supervised</strong>
+          Prescription safety checking
+        </div>
+      </div>
+      <div class="col-6 col-md-3 d-flex align-items-center justify-content-center justify-content-md-start">
+        <i class="bi bi-lock text-teal fs-3 me-2"></i>
+        <div>
+          <strong class="text-dark d-block">Encrypted &amp; Secure</strong>
+          Protected patient data
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Categories Grid -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Healthcare Specialties</span>
+        <h2 class="fw-bold text-dark mb-0">Browse by Category</h2>
+      </div>
+      <a href="{% url 'products:category_list' %}" class="btn btn-outline-teal btn-sm fw-semibold rounded-pill px-3">
+        All Categories &rarr;
+      </a>
+    </div>
+
+    <div class="row g-3">
+      {% for cat in categories %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <a href="{% url 'products:category_detail' cat.slug %}" class="card h-100 border-0 shadow-sm rounded-4 p-3 text-center text-decoration-none bg-white hover-shadow transition-all">
+            <div class="rounded-circle bg-soft-teal text-teal p-3 mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 58px; height: 58px;">
+              <i class="bi {{ cat.icon }} fs-3"></i>
+            </div>
+            <h6 class="fw-bold text-dark mb-1 text-truncate">{{ cat.name }}</h6>
+            <span class="small text-muted">{{ cat.products.count }} items</span>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 3. Featured Products -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Clinical Picks</span>
+        <h2 class="fw-bold text-dark mb-0">Featured Medications &amp; Wellness</h2>
+      </div>
+      <a href="{% url 'products:product_list' %}" class="btn btn-outline-teal btn-sm fw-semibold rounded-pill px-3">
+        View All Medicines &rarr;
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for product in featured_products %}
+        <div class="col-6 col-md-4 col-lg-3">
+          {% include 'includes/product_card.html' with product=product %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 4. Prescription Upload CTA Banner -->
+<section class="py-5 bg-gradient-dark text-white">
+  <div class="container py-lg-3">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <span class="badge bg-warning text-dark text-uppercase px-3 py-1 rounded-pill fw-bold mb-2">
+          <i class="bi bi-file-medical-fill me-1"></i> Prescription Required?
+        </span>
+        <h2 class="fw-bold mb-2">Have a Doctor's Prescription? Let Us Fulfill It.</h2>
+        <p class="text-white-50 mb-0" style="max-width: 620px;">
+          Upload your prescription file or photo. A certified clinical pharmacist will cross-reference dosages, check drug interactions, and authorize your home delivery.
+        </p>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a href="{% url 'prescriptions:upload' %}" class="btn btn-teal btn-lg px-4 py-3 fw-bold rounded-pill shadow">
+          <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload Prescription Slip
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Latest Arrivals & Daily Essentials -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Recently Restocked</span>
+        <h2 class="fw-bold text-dark mb-0">Popular Healthcare Essentials</h2>
+      </div>
+      <a href="{% url 'products:product_list' %}" class="btn btn-outline-teal btn-sm fw-semibold rounded-pill px-3">
+        Explore Catalog &rarr;
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for product in latest_medicines %}
+        <div class="col-6 col-md-4 col-lg-3">
+          {% include 'includes/product_card.html' with product=product %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 6. How It Works Section -->
+<section class="py-5 bg-white border-top">
+  <div class="container py-lg-3">
+    <div class="text-center mb-5">
+      <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Safe &amp; Efficient</span>
+      <h2 class="fw-bold text-dark">How PharmaCare Works</h2>
+      <p class="text-muted">Four simple steps from doctor prescription to doorstep delivery</p>
+    </div>
+
+    <div class="row g-4 text-center">
+      <div class="col-sm-6 col-lg-3">
+        <div class="p-4 rounded-4 bg-light h-100">
+          <div class="rounded-circle bg-teal text-white p-3 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+            <i class="bi bi-search fs-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark">1. Find Medicine</h5>
+          <p class="text-secondary small mb-0">Search certified OTC or prescription medicines by generic name or brand.</p>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3">
+        <div class="p-4 rounded-4 bg-light h-100">
+          <div class="rounded-circle bg-teal text-white p-3 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+            <i class="bi bi-file-earmark-medical fs-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark">2. Upload Rx</h5>
+          <p class="text-secondary small mb-0">For regulated medicines, attach a clear image or PDF of your doctor's slip.</p>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3">
+        <div class="p-4 rounded-4 bg-light h-100">
+          <div class="rounded-circle bg-teal text-white p-3 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+            <i class="bi bi-shield-check fs-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark">3. Clinical Review</h5>
+          <p class="text-secondary small mb-0">A registered pharmacist verifies dosage, strength, and regulatory validity.</p>
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-lg-3">
+        <div class="p-4 rounded-4 bg-light h-100">
+          <div class="rounded-circle bg-teal text-white p-3 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+            <i class="bi bi-truck fs-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark">4. Doorstep Delivery</h5>
+          <p class="text-secondary small mb-0">Dispatched in climate-secure packages with live tracking and signature handover.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

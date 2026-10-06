@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}My Saved Wishlist - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'accounts:profile' %}" class="text-teal text-decoration-none">My Account</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Saved Wishlist</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-0"><i class="bi bi-heart text-danger me-2"></i> My Wishlist</h2>
+      <p class="text-muted small mb-0">Save essential medications and health supplements for later refill.</p>
+    </div>
+    <span class="badge bg-soft-teal text-teal fs-6 px-3 py-2 rounded-pill">
+      {{ wishlist_items.count }} Saved Item(s)
+    </span>
+  </div>
+
+  {% if wishlist_items %}
+    <div class="row g-4">
+      {% for item in wishlist_items %}
+        <div class="col-md-6 col-lg-3" id="wishlist-col-{{ item.product.id }}">
+          <div class="card h-100 border-0 shadow-sm rounded-4 p-3 position-relative bg-white">
+            <button type="button" class="btn btn-sm btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-2 wishlist-btn" data-product-id="{{ item.product.id }}" title="Remove from Wishlist">
+              <i class="bi bi-trash text-danger"></i>
+            </button>
+
+            <a href="{% url 'products:product_detail' item.product.slug %}" class="text-center p-3 bg-light rounded-3 d-flex align-items-center justify-content-center mb-3">
+              {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid object-fit-contain" style="height: 140px;">
+              {% else %}
+                <i class="bi bi-capsule fs-1 text-teal" style="height: 140px; display: flex; align-items: center;"></i>
+              {% endif %}
+            </a>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="badge bg-soft-teal text-teal small">{{ item.product.category.name }}</span>
+              <span class="small text-muted">{{ item.product.dosage_form }}</span>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-1 text-truncate">
+              <a href="{% url 'products:product_detail' item.product.slug %}" class="text-dark text-decoration-none hover-teal">
+                {{ item.product.name }}
+              </a>
+            </h6>
+
+            <div class="small text-muted mb-2">{{ item.product.brand }}</div>
+
+            <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+              <div>
+                <span class="fs-5 fw-bold text-teal">${{ item.product.effective_price }}</span>
+              </div>
+              <div>
+                {% if item.product.stock_quantity > 0 %}
+                  <button type="button" class="btn btn-teal btn-sm rounded-pill px-3 add-to-cart-btn" data-product-id="{{ item.product.id }}">
+                    <i class="bi bi-bag-plus"></i> Move to Cart
+                  </button>
+                {% else %}
+                  <span class="badge bg-secondary">Out of Stock</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+      <div class="display-3 text-muted mb-3"><i class="bi bi-heartbreak"></i></div>
+      <h3 class="fw-bold text-dark">Your Wishlist is Empty</h3>
+      <p class="text-muted">You haven't saved any medications or supplements to your wishlist yet.</p>
+      <div>
+        <a href="{% url 'products:product_list' %}" class="btn btn-teal px-4 py-2 fw-semibold">
+          <i class="bi bi-capsule me-1"></i> Browse Catalog
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

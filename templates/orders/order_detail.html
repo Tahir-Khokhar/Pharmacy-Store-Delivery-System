@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_number }} - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-teal text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'orders:order_list' %}" class="text-teal text-decoration-none">Orders</a></li>
+      <li class="breadcrumb-item active" aria-current="page">#{{ order.order_number }}</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+      <span class="badge bg-soft-teal text-teal mb-1">Order Details</span>
+      <h2 class="fw-bold text-dark mb-0">Order #{{ order.order_number }}</h2>
+      <div class="small text-muted">Placed on {{ order.created_at|date:"F d, Y at H:i" }}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'orders:invoice' order.order_number %}" target="_blank" class="btn btn-outline-teal fw-semibold">
+        <i class="bi bi-printer me-1"></i> Print Invoice
+      </a>
+      {% if order.can_be_cancelled and order.customer == request.user %}
+        <form action="{% url 'orders:cancel' order.order_number %}" method="post" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger fw-semibold">
+            <i class="bi bi-x-circle me-1"></i> Cancel Order
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Items and Tracking (Col 8) -->
+    <div class="col-lg-8">
+      <!-- Order Status Banner -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-truck text-teal me-2"></i> Fulfillment Status</h5>
+          <span class="badge {% if order.order_status == 'DELIVERED' %}bg-success{% elif order.order_status == 'CANCELLED' %}bg-danger{% else %}bg-primary{% endif %} fs-6 px-3 py-2 rounded-pill">
+            {{ order.get_order_status_display }}
+          </span>
+        </div>
+
+        {% if order.delivery %}
+          <div class="bg-light p-3 rounded-3 small">
+            <div class="row g-2">
+              <div class="col-sm-6">
+                <strong>Tracking Number:</strong> <code>{{ order.delivery.tracking_number }}</code>
+              </div>
+              <div class="col-sm-6">
+                <strong>Courier Status:</strong> <span class="badge bg-info text-dark">{{ order.delivery.get_status_display }}</span>
+              </div>
+              {% if order.delivery.delivery_staff %}
+                <div class="col-sm-6">
+                  <strong>Assigned Driver:</strong> {{ order.delivery.delivery_staff.get_full_name|default:order.delivery.delivery_staff.username }}
+                </div>
+              {% endif %}
+              {% if order.delivery.delivered_at %}
+                <div class="col-sm-6 text-success fw-bold">
+                  Delivered on: {{ order.delivery.delivered_at|date:"M d, Y H:i" }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Items Table -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+        <div class="card-header bg-white p-3 border-bottom">
+          <h5 class="fw-bold text-dark mb-0">Purchased Medications ({{ order.items.count }})</h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light small text-uppercase text-muted">
+              <tr>
+                <th class="ps-4">Item Details</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Tax</th>
+                <th class="text-end pe-4">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in order.items.all %}
+                <tr>
+                  <td class="ps-4 py-3">
+                    <div class="fw-bold text-dark">{{ item.product_name_snapshot }}</div>
+                    <div class="small text-muted">SKU: <code>{{ item.sku_snapshot }}</code></div>
+                    {% if item.prescription_required %}
+                      <span class="badge bg-warning text-dark small mt-1"><i class="bi bi-file-medical-fill me-1"></i> Rx Controlled</span>
+                    {% endif %}
+                  </td>
+                  <td>${{ item.unit_price }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>${{ item.tax }}</td>
+                  <td class="text-end pe-4 fw-bold text-teal">${{ item.subtotal }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Staff / Pharmacist Status Update Panel -->
+      {% if can_manage_status %}
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-4 border-info">
+          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-gear-fill text-info me-2"></i> Staff Order Processing</h5>
+          <form action="{% url 'orders:update_status' order.order_number %}" method="post">
+            {% csrf_token %}
+            <div class="row g-3 align-items-end">
+              <div class="col-md-5">
+                <label class="form-label fw-semibold small">Advance Order Status</label>
+                {{ status_form.order_status }}
+              </div>
+              <div class="col-md-5">
+                <label class="form-label fw-semibold small">Internal Staff Notes</label>
+                {{ status_form.staff_notes }}
+              </div>
+              <div class="col-md-2">
+                <button type="submit" class="btn btn-teal w-100 fw-bold">Update</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Address, Prescription, Pricing (Col 4) -->
+    <div class="col-lg-4">
+      <!-- Shipping Destination -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-geo-alt text-teal me-1"></i> Shipping Address</h5>
+        <div class="small text-secondary" style="white-space: pre-line;">
+          {{ order.shipping_address_snapshot }}
+        </div>
+      </div>
+
+      <!-- Attached Prescription Details -->
+      {% if order.requires_prescription %}
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 border-start border-4 border-warning">
+          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-file-earmark-medical text-warning me-1"></i> Prescription Status</h5>
+          {% if order.prescription %}
+            <div class="small">
+              <div><strong>Prescription ID:</strong> {{ order.prescription.prescription_number }}</div>
+              <div><strong>Doctor:</strong> {{ order.prescription.doctor_name|default:"Unlisted" }}</div>
+              <div class="mt-2">
+                Status:
+                {% if order.prescription.status == 'APPROVED' %}
+                  <span class="badge bg-success">Approved by Pharmacist</span>
+                {% elif order.prescription.status == 'REJECTED' %}
+                  <span class="badge bg-danger">Rejected</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">Under Review</span>
+                {% endif %}
+              </div>
+              <div class="mt-2">
+                <a href="{% url 'prescriptions:detail' order.prescription.pk %}" class="btn btn-sm btn-outline-teal">
+                  <i class="bi bi-eye"></i> View Prescription
+                </a>
+              </div>
+            </div>
+          {% else %}
+            <div class="text-danger small">No prescription attached yet. Order on hold.</div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <!-- Pricing Summary -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <h5 class="fw-bold text-dark mb-3">Financial Summary</h5>
+        <div class="d-flex justify-content-between mb-2 small">
+          <span class="text-muted">Subtotal:</span>
+          <span class="fw-semibold text-dark">${{ order.subtotal }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 small">
+          <span class="text-muted">Sales Tax:</span>
+          <span class="fw-semibold text-dark">${{ order.tax }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 small">
+          <span class="text-muted">Delivery Fee:</span>
+          <span class="fw-semibold text-dark">${{ order.delivery_fee }}</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between mb-3 align-items-baseline">
+          <span class="fs-5 fw-bold text-dark">Grand Total:</span>
+          <span class="fs-4 fw-bold text-teal">${{ order.grand_total }}</span>
+        </div>
+        <div class="small text-muted bg-light p-2 rounded text-center">
+          Payment: <strong>{{ order.payment_method }}</strong> &bull;
+          <span class="badge {% if order.payment_status == 'PAID' %}bg-success{% else %}bg-secondary{% endif %}">
+            {{ order.payment_status }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('form select, form textarea').forEach(el => {
+    el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

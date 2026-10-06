@@ -1,0 +1,74 @@
+<div class="card h-100 border-0 shadow-sm rounded-4 product-card position-relative overflow-hidden transition-all">
+  <!-- Badges Top Bar -->
+  <div class="position-absolute top-0 start-0 p-2 d-flex flex-column gap-1" style="z-index: 2;">
+    {% if product.discount_percent > 0 %}
+      <span class="badge bg-danger rounded-pill shadow-sm small">-{{ product.discount_percent }}% OFF</span>
+    {% endif %}
+    {% if product.prescription_required %}
+      <span class="badge bg-warning text-dark rounded-pill shadow-sm small" title="Valid prescription required"><i class="bi bi-file-medical-fill me-1"></i> Rx</span>
+    {% endif %}
+  </div>
+
+  <!-- Wishlist button -->
+  <div class="position-absolute top-0 end-0 p-2" style="z-index: 2;">
+    <button type="button" class="btn btn-sm btn-light rounded-circle shadow-sm p-1 wishlist-btn" data-product-id="{{ product.id }}" title="Toggle Wishlist" style="width: 32px; height: 32px;">
+      <i class="bi {% if is_wishlisted %}bi-heart-fill text-danger{% else %}bi-heart text-muted{% endif %}"></i>
+    </button>
+  </div>
+
+  <!-- Image -->
+  <a href="{% url 'products:product_detail' product.slug %}" class="product-img-wrapper text-center p-3 bg-light d-flex align-items-center justify-content-center text-decoration-none">
+    {% if product.image %}
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid product-img object-fit-contain" style="height: 160px; max-width: 100%;">
+    {% else %}
+      <div class="product-placeholder d-flex flex-column align-items-center justify-content-center text-teal" style="height: 160px;">
+        <i class="bi bi-capsule fs-1 mb-1"></i>
+        <span class="small text-muted">{{ product.dosage_form }}</span>
+      </div>
+    {% endif %}
+  </a>
+
+  <!-- Card Body -->
+  <div class="card-body p-3 d-flex flex-column">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="badge bg-soft-teal text-teal small">{{ product.category.name }}</span>
+      <span class="small text-muted">{{ product.dosage_form }}</span>
+    </div>
+
+    <h6 class="card-title fw-bold text-dark mb-1 text-truncate">
+      <a href="{% url 'products:product_detail' product.slug %}" class="text-dark text-decoration-none hover-teal" title="{{ product.name }}">
+        {{ product.name }}
+      </a>
+    </h6>
+
+    {% if product.generic_name %}
+      <div class="small text-muted text-truncate mb-1" style="font-size: 0.8rem;">
+        <i class="bi bi-info-circle me-1"></i>{{ product.generic_name }}
+      </div>
+    {% endif %}
+
+    <div class="small text-secondary mb-2">
+      Brand: <strong>{{ product.brand }}</strong>
+      {% if product.strength %}&bull; {{ product.strength }}{% endif %}
+    </div>
+
+    <!-- Pricing -->
+    <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+      <div>
+        <span class="fs-5 fw-bold text-teal">${{ product.effective_price }}</span>
+        {% if product.discount_price and product.discount_price < product.price %}
+          <span class="small text-muted text-decoration-line-through ms-1">${{ product.price }}</span>
+        {% endif %}
+      </div>
+      <div>
+        {% if product.stock_quantity > 0 %}
+          <button type="button" class="btn btn-sm btn-teal rounded-pill px-3 add-to-cart-btn" data-product-id="{{ product.id }}">
+            <i class="bi bi-bag-plus"></i> Add
+          </button>
+        {% else %}
+          <span class="badge bg-secondary rounded-pill">Out of Stock</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

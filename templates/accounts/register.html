@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Create an Account - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-teal text-white p-4 text-center">
+          <h4 class="fw-bold mb-1">Create Customer Account</h4>
+          <p class="small mb-0 text-white-50">Join PharmaCare for easy prescription refills & fast delivery</p>
+        </div>
+
+        <div class="card-body p-4 p-sm-5">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger py-2 small">
+                {{ form.non_field_errors.0 }}
+              </div>
+            {% endif %}
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="{{ form.first_name.id_for_label }}" class="form-label fw-semibold">First Name</label>
+                <input type="text" name="first_name" id="{{ form.first_name.id_for_label }}" class="form-control" required value="{{ form.first_name.value|default:'' }}">
+                {% if form.first_name.errors %}
+                  <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-sm-6">
+                <label for="{{ form.last_name.id_for_label }}" class="form-label fw-semibold">Last Name</label>
+                <input type="text" name="last_name" id="{{ form.last_name.id_for_label }}" class="form-control" required value="{{ form.last_name.value|default:'' }}">
+                {% if form.last_name.errors %}
+                  <div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold">Username</label>
+              <input type="text" name="username" id="{{ form.username.id_for_label }}" class="form-control" required value="{{ form.username.value|default:'' }}">
+              {% if form.username.errors %}
+                <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">Email Address</label>
+              <input type="email" name="email" id="{{ form.email.id_for_label }}" class="form-control" required value="{{ form.email.value|default:'' }}">
+              {% if form.email.errors %}
+                <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.phone.id_for_label }}" class="form-label fw-semibold">Phone Number</label>
+              <input type="tel" name="phone" id="{{ form.phone.id_for_label }}" class="form-control" placeholder="+1 (555) 000-0000" value="{{ form.phone.value|default:'' }}">
+              {% if form.phone.errors %}
+                <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.password1.id_for_label }}" class="form-label fw-semibold">Password</label>
+              <input type="password" name="password1" id="{{ form.password1.id_for_label }}" class="form-control" required>
+              {% if form.password1.errors %}
+                <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label for="{{ form.password2.id_for_label }}" class="form-label fw-semibold">Confirm Password</label>
+              <input type="password" name="password2" id="{{ form.password2.id_for_label }}" class="form-control" required>
+              {% if form.password2.errors %}
+                <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-teal w-100 py-2 fw-semibold shadow-sm mb-3">
+              <i class="bi bi-person-check me-1"></i> Register Account
+            </button>
+
+            <div class="text-center small text-muted">
+              Already registered? <a href="{% url 'accounts:login' %}" class="text-teal fw-semibold">Sign in here</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

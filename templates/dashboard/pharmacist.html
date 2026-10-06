@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}Pharmacist Clinical Hub - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-lg-5">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+    <div>
+      <span class="badge bg-soft-teal text-teal text-uppercase px-3 py-1 rounded-pill fw-semibold">Clinical Pharmacy Station</span>
+      <h2 class="fw-bold text-dark mb-0"><i class="bi bi-shield-check text-teal me-2"></i> Pharmacist Verification Desk</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'prescriptions:list' %}" class="btn btn-teal fw-semibold">
+        <i class="bi bi-file-earmark-medical me-1"></i> All Prescriptions
+      </a>
+      <a href="{% url 'orders:order_list' %}" class="btn btn-outline-teal fw-semibold">
+        <i class="bi bi-receipt me-1"></i> Orders Queue
+      </a>
+    </div>
+  </div>
+
+  <!-- Clinical KPI Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-warning">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 me-3">
+            <i class="bi bi-file-earmark-medical fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Pending Rx Verification</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ pending_rx_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-danger">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-danger bg-opacity-10 text-danger p-3 me-3">
+            <i class="bi bi-hourglass-top fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Orders Held for Review</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ orders_awaiting_rx.count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-info">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 me-3">
+            <i class="bi bi-calendar-event fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Expiring Medicines</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ expiring_medicines.count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-success">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 me-3">
+            <i class="bi bi-bag-check fs-3"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Today's Total Orders</div>
+            <h3 class="fw-bold mb-0 text-dark">{{ today_orders_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Prescriptions Awaiting Clinical Review (Col 7) -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+        <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-medical-fill text-warning me-2"></i> Prescriptions Needing Clinical Decision</h5>
+          <span class="badge bg-warning text-dark">{{ pending_prescriptions.count }} Pending</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light text-uppercase text-muted">
+              <tr>
+                <th class="ps-3">Prescription #</th>
+                <th>Patient</th>
+                <th>Doctor / Clinic</th>
+                <th>Uploaded</th>
+                <th class="text-end pe-3">Review Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rx in pending_prescriptions %}
+                <tr>
+                  <td class="ps-3 fw-bold text-dark">
+                    <a href="{% url 'prescriptions:detail' rx.pk %}" class="text-teal text-decoration-none">
+                      {{ rx.prescription_number }}
+                    </a>
+                  </td>
+                  <td>
+                    <div class="fw-semibold">{{ rx.customer.get_full_name|default:rx.customer.username }}</div>
+                  </td>
+                  <td>
+                    <div>{{ rx.doctor_name|default:"Unlisted" }}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">{{ rx.clinic_hospital|default:"Clinic" }}</div>
+                  </td>
+                  <td>{{ rx.created_at|date:"M d, H:i" }}</td>
+                  <td class="text-end pe-3">
+                    <a href="{% url 'prescriptions:detail' rx.pk %}" class="btn btn-sm btn-teal">
+                      <i class="bi bi-shield-check me-1"></i> Verify &amp; Decide
+                    </a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    <i class="bi bi-check-circle text-success fs-3 d-block mb-1"></i>
+                    All prescriptions have been reviewed!
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Regulated Orders Awaiting Release -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-danger me-2"></i> Orders Held for Prescription Verification</h5>
+          <span class="badge bg-danger">{{ orders_awaiting_rx.count }} Held</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light text-uppercase text-muted">
+              <tr>
+                <th class="ps-3">Order #</th>
+                <th>Customer</th>
+                <th>Rx Document</th>
+                <th>Order Total</th>
+                <th class="text-end pe-3">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ord in orders_awaiting_rx %}
+                <tr>
+                  <td class="ps-3 fw-bold">#{{ ord.order_number }}</td>
+                  <td>{{ ord.customer.username }}</td>
+                  <td>
+                    {% if ord.prescription %}
+                      <a href="{% url 'prescriptions:detail' ord.prescription.pk %}" class="badge bg-light text-teal border text-decoration-none">
+                        {{ ord.prescription.prescription_number }}
+                      </a>
+                    {% else %}
+                      <span class="badge bg-danger">Missing</span>
+                    {% endif %}
+                  </td>
+                  <td class="fw-semibold text-teal">${{ ord.grand_total }}</td>
+                  <td class="text-end pe-3">
+                    <a href="{% url 'orders:detail' ord.order_number %}" class="btn btn-sm btn-outline-teal py-0 px-2">
+                      Inspect
+                    </a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center py-3 text-muted">No orders currently held.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Expiring & Low Stock Medicines (Col 5) -->
+    <div class="col-lg-5">
+      <!-- Expiring Medicines Alert -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+        <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-exclamation-diamond text-info me-2"></i> Batches Expiring Within 60 Days</h6>
+          <span class="badge bg-info text-dark">{{ expiring_medicines.count }} Batches</span>
+        </div>
+        <div class="p-3">
+          {% for b in expiring_medicines %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom small">
+              <div>
+                <strong class="text-dark">{{ b.product.name }}</strong>
+                <div class="text-muted">Batch: <code>{{ b.batch_number }}</code> &bull; {{ b.current_quantity }} units</div>
+              </div>
+              <span class="badge bg-warning text-dark">{{ b.expiry_date|date:"M d, Y" }}</span>
+            </div>
+          {% empty %}
+            <div class="text-center text-muted small py-3">No batches expiring soon.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Low Stock Warnings -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-exclamation-triangle text-warning me-2"></i> Low Stock Threshold Alerts</h6>
+          <span class="badge bg-warning text-dark">{{ low_stock_medicines.count }} Items</span>
+        </div>
+        <div class="p-3">
+          {% for m in low_stock_medicines %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom small">
+              <div>
+                <strong class="text-dark">{{ m.name }}</strong>
+                <div class="text-muted">{{ m.brand }} &bull; Min: {{ m.min_stock_level }}</div>
+              </div>
+              <div>
+                <span class="badge bg-danger">{{ m.stock_quantity }} left</span>
+                <a href="{% url 'inventory:adjust' %}?product_id={{ m.id }}" class="btn btn-sm btn-link p-0 ms-2 text-teal">Restock</a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center text-muted small py-3">All critical stocks sufficient.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
