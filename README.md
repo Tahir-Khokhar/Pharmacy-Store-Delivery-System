@@ -101,22 +101,14 @@ POST /api/v1/deliveries/{track}/update-status/ # Update delivery status
 
 ## 💻 Quick Start & Installation
 
-### 1. Clone & Set Up Virtual Environment
 
-```bash
-git clone https://github.com/example/pharmacare.git
-cd pharmacare
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 2. Install Dependencies
+### 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Apply Migrations & Seed Data
+### 2. Apply Migrations & Seed Data
 
 ```bash
 python manage.py makemigrations
@@ -124,7 +116,7 @@ python manage.py migrate
 python manage.py seed_pharmacy_data
 ```
 
-### 4. Run Development Server
+### 3. Run Development Server
 
 ```bash
 python manage.py runserver 0.0.0.0:8000
